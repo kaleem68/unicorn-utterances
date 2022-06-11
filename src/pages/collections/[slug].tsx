@@ -42,10 +42,12 @@ const collectionQuery = {
   type: true,
   chapterList: true,
   socialImg: true,
+  aboveFoldMarkdown: true,
 } as const;
 
 type Props = {
   markdownHTML: string;
+  aboveMarkdownHTML?: string;
   slug: string;
   collectionsDirectory: string;
   collection: PickDeep<CollectionInfo, typeof collectionQuery>;
@@ -55,6 +57,7 @@ const Collection = ({
   slug,
   collectionsDirectory,
   markdownHTML,
+  aboveMarkdownHTML,
   collection,
 }: Props) => {
   const { colorMode } = React.useContext(ThemeContext);
@@ -62,6 +65,11 @@ const Collection = ({
 
   const result = useMarkdownRenderer({
     markdownHTML,
+    serverPath: ["/collections", slug],
+  });
+
+  const aboveResult = useMarkdownRenderer({
+    markdownHTML: aboveMarkdownHTML || "",
     serverPath: ["/collections", slug],
   });
 
@@ -134,6 +142,11 @@ const Collection = ({
               </div>
             </div>
           </div>
+          {aboveMarkdownHTML && (
+            <div className={`post-body ${styles.markdownContainer}`}>
+              {aboveResult}
+            </div>
+          )}
         </div>
         <div className={styles.stitchedAreaContainer}>
           <div
@@ -232,12 +245,18 @@ export async function getStaticProps({
     path.resolve(collectionsDirectory, collection.slug)
   );
 
+  const { html: aboveMarkdownHTML } = await markdownToHtml(
+    collection.aboveFoldMarkdown || "",
+    path.resolve(collectionsDirectory, collection.slug)
+  );
+
   return {
     props: {
       collection: {
         ...collection,
       },
       markdownHTML,
+      aboveMarkdownHTML,
       collectionsDirectory,
       slug: params.slug,
     } as Props,

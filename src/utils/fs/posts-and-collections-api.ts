@@ -61,6 +61,14 @@ export function getCollectionBySlug<ToPick extends CollectionKeysToPick>(
       .sort((a, b) => (a.order! < b.order! ? -1 : 1));
   }
 
+  if (fields.aboveFoldMarkdown) {
+    const { content } = readMarkdownFile(
+      join(collectionsDirectory, realSlug, pickedData.aboveFoldMarkdown),
+      { content: true }
+    );
+    pickedData.aboveFoldMarkdown = content;
+  }
+
   if (fields.coverImg) {
     const absoluteFSPath = join(
       collectionsDirectory,
